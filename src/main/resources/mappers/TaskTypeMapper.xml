@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ts.dao.TaskTypeMapper">
+    <!-- Result mapping for TaskType entity -->
+    <resultMap id="taskTypeResultMap" type="com.ts.model.entity.TaskType">
+        <id property="typeName" column="TYPE_NAME"/>
+        <result property="typeGroup" column="TYPE_GROUP"/>
+        <result property="typeDesc" column="TYPE_DESC"/>
+        <result property="className" column="CLASS_NAME"/>
+        <result property="pvalue" column="PVALUE"/>
+        <result property="taskColor" column="TASK_COLOR"/>
+        <result property="interruptableFlag" column="INTERRUPTABLE_FLAG"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+    </resultMap>
+
+    <!-- Select all task types -->
+    <select id="selectAll" resultMap="taskTypeResultMap">
+        SELECT TYPE_NAME,
+               TYPE_GROUP,
+               TYPE_DESC,
+               CLASS_NAME,
+               PVALUE,
+               TASK_COLOR,
+               INTERRUPTABLE_FLAG,
+               CREATION_DATE
+        FROM TASK_TYPE
+        ORDER BY TYPE_GROUP, TYPE_NAME
+    </select>
+
+    <!-- Select task type by name -->
+    <select id="selectByPrimaryKey" parameterType="string" resultMap="taskTypeResultMap">
+        SELECT TYPE_NAME,
+               TYPE_GROUP,
+               TYPE_DESC,
+               CLASS_NAME,
+               PVALUE,
+               TASK_COLOR,
+               INTERRUPTABLE_FLAG,
+               CREATION_DATE
+        FROM TASK_TYPE
+        WHERE TYPE_NAME = #{typeName}
+    </select>
+
+    <select id="search" parameterType="string" resultMap="taskTypeResultMap">
+        SELECT
+        TYPE_NAME,
+        TYPE_GROUP,
+        TYPE_DESC,
+        CLASS_NAME,
+        PVALUE,
+        TASK_COLOR,
+        INTERRUPTABLE_FLAG,
+        CREATION_DATE
+        FROM
+        TASK_TYPE
+        <where>
+            <if test="typeGroup != null and typeGroup != ''">
+                AND TYPE_GROUP = #{typeGroup}
+            </if>
+            <if test="typeName != null and typeName != ''">
+                AND TYPE_NAME LIKE #{typeName}
+            </if>
+        </where>
+    </select>
+
+    <!-- Insert a new task type -->
+    <insert id="insert" parameterType="com.ts.model.entity.TaskType">
+        INSERT INTO TASK_TYPE (TYPE_NAME,
+                               TYPE_GROUP,
+                               TYPE_DESC,
+                               CLASS_NAME,
+                               PVALUE,
+                               INTERRUPTABLE_FLAG,
+                               CREATION_DATE)
+        VALUES (#{typeName},
+                #{typeGroup},
+                #{typeDesc},
+                #{className},
+                #{pvalue},
+                #{interruptableFlag, jdbcType=VARCHAR},
+                #{creationDate, jdbcType=TIMESTAMP})
+    </insert>
+
+    <!-- Update an existing task type -->
+    <update id="updateByPrimaryKey" parameterType="com.ts.model.entity.TaskType">
+        UPDATE TASK_TYPE
+        SET TYPE_GROUP         = #{typeGroup},
+            TYPE_DESC          = #{typeDesc},
+            CLASS_NAME         = #{className},
+            PVALUE             = #{pvalue},
+            INTERRUPTABLE_FLAG = #{interruptableFlag}
+        WHERE TYPE_NAME = #{typeName}
+    </update>
+
+    <!-- Delete a task type -->
+    <delete id="deleteByPrimaryKey" parameterType="string">
+        DELETE
+        FROM TASK_TYPE
+        WHERE TYPE_NAME = #{typeName}
+    </delete>
+</mapper>

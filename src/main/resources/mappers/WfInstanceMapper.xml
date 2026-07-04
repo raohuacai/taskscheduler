@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.WfInstanceMapper">
+    <resultMap id="WfInstanceResult" type="com.ts.model.entity.WfInstance">
+        <id property="wfInstanceId" column="WF_INSTANCE_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="workflowName"  column="WORKFLOW_NAME"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+        <result property="errorFlag" column="ERROR_FLAG"/>
+        <result property="status" column="STATUS"/>
+        <result property="errorMessage" column="ERROR_MESSAGE"/>
+        <result property="parentWfInstanceId" column="PWF_INSTANCE_ID"/>
+        <result property="topParentInstanceId" column="TPWF_INSTANCE_ID"/>
+        <result property="taskErrorFlag" column="TASK_ERROR_FLAG"/>
+    </resultMap>
+    
+    <select id="selectByPrimaryKey" resultMap="WfInstanceResult">
+        SELECT
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            START_DATE,
+            END_DATE,
+            ERROR_FLAG,
+            STATUS,
+            ERROR_MESSAGE,
+            PWF_INSTANCE_ID,
+            TPWF_INSTANCE_ID
+        FROM
+            WF_INSTANCES
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </select>
+    
+    <select id="selectByWorkflowId" resultMap="WfInstanceResult">
+        SELECT
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            START_DATE,
+            END_DATE,
+            ERROR_FLAG,
+            STATUS,
+            ERROR_MESSAGE,
+            PWF_INSTANCE_ID,
+            TPWF_INSTANCE_ID
+        FROM
+            WF_INSTANCES
+        WHERE
+            WORKFLOW_ID = #{workflowId}
+        ORDER BY
+            START_DATE DESC
+    </select>
+
+    <select id="selectAll" resultMap="WfInstanceResult">
+        SELECT
+        i.WF_INSTANCE_ID,
+        i.WORKFLOW_ID,
+        d.WORKFLOW_NAME,
+        i.START_DATE,
+        i.END_DATE,
+        i.ERROR_FLAG,
+        i.STATUS,
+        i.ERROR_MESSAGE,
+        i.PWF_INSTANCE_ID,
+        i.TPWF_INSTANCE_ID,
+        CASE
+        WHEN EXISTS (
+        SELECT 1
+        FROM task_instances ti
+        WHERE ti.WF_INSTANCE_ID = i.WF_INSTANCE_ID
+        AND ti.STATUS IN ('ERROR', 'TIMEOUT','CANCELED')
+        ) THEN 'Y'
+        ELSE 'N'
+        END AS TASK_ERROR_FLAG
+        FROM
+        WF_INSTANCES i
+        LEFT JOIN
+        WF_DEFINITIONS d ON i.WORKFLOW_ID = d.WORKFLOW_ID
+        <where>
+            <if test="workflowId != null and workflowId != ''">
+                AND i.WORKFLOW_ID LIKE #{workflowId}
+            </if>
+            <if test="workflowName != null and workflowName != ''">
+                AND d.WORKFLOW_NAME LIKE #{workflowName}
+            </if>
+            <if test="wfInstanceId != null and wfInstanceId != ''">
+                AND i.WF_INSTANCE_ID LIKE #{wfInstanceId}
+            </if>
+            <if test="parentWfInstanceId != null and parentWfInstanceId != ''">
+                AND i.PWF_INSTANCE_ID LIKE #{parentWfInstanceId}
+            </if>
+            <if test="topParentInstanceId != null and topParentInstanceId != ''">
+                AND i.TPWF_INSTANCE_ID LIKE #{topParentInstanceId}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            <if test="startDateFrom != null">
+                AND START_DATE >= #{startDateFrom}
+            </if>
+            <if test="startDateTo != null">
+                AND START_DATE &lt;= #{startDateTo}
+            </if>
+        </where>
+    </select>
+    
+    <insert id="insert" parameterType="com.ts.model.entity.WfInstance">
+        INSERT INTO WF_INSTANCES (
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            START_DATE,
+            END_DATE,
+            ERROR_FLAG,
+            STATUS,
+            ERROR_MESSAGE,
+            PWF_INSTANCE_ID,
+            TPWF_INSTANCE_ID
+        ) VALUES (
+            #{wfInstanceId},
+            #{workflowId},
+            #{startDate},
+            #{endDate},
+            #{errorFlag},
+            #{status},
+            #{errorMessage},
+            #{parentWfInstanceId},
+            #{topParentInstanceId}
+        )
+    </insert>
+    
+    <update id="updateStatusToError" parameterType="com.ts.model.entity.WfInstance">
+        UPDATE WF_INSTANCES
+        SET
+            END_DATE = #{endDate},
+            ERROR_FLAG = #{errorFlag},
+            STATUS = #{status},
+            ERROR_MESSAGE = #{errorMessage}
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </update>
+    
+    <update id="updateStatusToRunning" parameterType="com.ts.model.entity.WfInstance">
+        UPDATE WF_INSTANCES
+        SET
+            START_DATE=#{startDate},
+            END_DATE = #{endDate},
+            STATUS = #{status},
+            ERROR_MESSAGE = #{errorMessage}
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </update>
+    <update id="updateStatus" parameterType="com.ts.model.entity.WfInstance">
+        UPDATE WF_INSTANCES
+        SET
+            END_DATE = #{endDate},
+            STATUS = #{status}
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </update>
+</mapper>

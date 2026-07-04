@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.TaskLogMapper">
+    <resultMap id="TaskLogResult" type="com.ts.model.entity.TaskLog">
+        <id property="taskLogId" column="TASK_LOG_ID"/>
+        <result property="wfInstanceId" column="WF_INSTANCE_ID"/>
+        <result property="taskInstanceId" column="TASK_INSTANCE_ID"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+        <result property="message" column="MESSAGE"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ts.model.entity.TaskLog">
+        INSERT INTO TASK_LOG (
+            TASK_LOG_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            CREATION_DATE,
+            MESSAGE
+        ) VALUES (
+                     #{taskLogId},
+                     #{wfInstanceId},
+                     #{taskInstanceId},
+                     #{creationDate},
+                     #{message}
+                 )
+    </insert>
+
+    <select id="selectByTaskInstanceId" resultMap="TaskLogResult">
+        SELECT
+            TASK_LOG_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            CREATION_DATE,
+            MESSAGE
+        FROM
+            TASK_LOG
+        WHERE
+            TASK_INSTANCE_ID = #{taskInstanceId}
+        ORDER BY
+            CREATION_DATE,TASK_LOG_ID
+    </select>
+</mapper>

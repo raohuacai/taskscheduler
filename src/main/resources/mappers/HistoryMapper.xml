@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.HistoryMapper">
+    <resultMap id="workflowInstanceResultMap" type="com.ts.model.vo.WorkflowInstanceVO">
+        <id property="instanceId" column="WF_INST_ID"/>
+        <result property="parentInstanceId" column="PWF_INST_ID"/>
+        <result property="topParentInstanceId" column="TPWF_INST_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="workflowName" column="WORKFLOW_NAME"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+        <result property="status" column="STATUS"/>
+        <collection property="tasks" ofType="com.ts.model.vo.TaskInstanceVO">
+            <id property="taskInstanceId" column="TASK_INST_ID"/>
+            <result property="taskId" column="TASK_ID"/>
+            <result property="taskName" column="TASK_NAME"/>
+            <result property="taskType" column="TASK_TYPE"/>
+            <result property="startDate" column="TASK_START_DATE"/>
+            <result property="endDate" column="TASK_END_DATE"/>
+            <result property="status" column="TASK_STATUS"/>
+            <result property="errorFlag" column="ERROR_FLAG"/>
+        </collection>
+    </resultMap>
+
+    <select id="search" resultMap="workflowInstanceResultMap">
+        SELECT
+        TPWF_INST_ID,
+        PWF_INST_ID,
+        WF_INST_ID,
+        WORKFLOW_ID,
+        WORKFLOW_NAME,
+        START_DATE,
+        END_DATE,
+        STATUS,
+        TASK_INST_ID,
+        TASK_ID,
+        TASK_NAME,
+        TASK_TYPE,
+        TASK_START_DATE,
+        TASK_END_DATE,
+        ERROR_FLAG,
+        TASK_STATUS
+        FROM V_INSTANCES
+        <where>
+            <if test="workflowId != null and workflowId != ''">
+                AND WORKFLOW_ID LIKE #{workflowId}
+            </if>
+            <if test="workflowName != null and workflowName != ''">
+                AND WORKFLOW_NAME LIKE #{workflowName}
+            </if>
+            <if test="instanceId != null and instanceId != ''">
+                AND WF_INST_ID LIKE #{instanceId}
+            </if>
+            <if test="parentWfInstanceId != null and parentWfInstanceId != ''">
+                AND PWF_INST_ID LIKE #{parentWfInstanceId}
+            </if>
+            <if test="topParentInstanceId != null and topParentInstanceId != ''">
+                AND TPWF_INST_ID LIKE #{topParentInstanceId}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            <if test="startDateFrom != null">
+                AND START_DATE >= #{startDateFrom}
+            </if>
+            <if test="startDateTo != null">
+                AND START_DATE &lt;= #{startDateTo}
+            </if>
+        </where>
+    </select>
+
+    <select id="getById" resultMap="workflowInstanceResultMap">
+        SELECT
+            TPWF_INST_ID,
+            PWF_INST_ID,
+            WF_INST_ID,
+            WORKFLOW_ID,
+            WORKFLOW_NAME,
+            START_DATE,
+            END_DATE,
+            STATUS,
+            TASK_INST_ID,
+            TASK_ID,
+            TASK_NAME,
+            TASK_TYPE,
+            TASK_START_DATE,
+            TASK_END_DATE,
+            ERROR_FLAG,
+            TASK_STATUS
+        FROM V_INSTANCES
+        WHERE WF_INST_ID = #{instanceId}
+    </select>
+</mapper>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Scheduler - Login</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            margin: auto;
+        }
+        .login-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: #007bff;
+        }
+        .btn-login {
+            width: 100%;
+            font-weight: 600;
+        }
+        .alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <div class="logo">
+                <h1>Task Scheduler</h1>
+            </div>
+            <div class="alert alert-danger" id="error-message" role="alert"></div>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/libs/jquery-3.6.0.min.js"></script>
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Check if already logged in
+            if (localStorage.getItem('auth_token')) {
+                window.location.href = 'index.html';
+            }
+
+            $('#login-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const username = $('#username').val();
+                const password = $('#password').val();
+                
+                // Reset error message
+                $('#error-message').hide();
+                
+                // Call login API
+                $.ajax({
+                    url: '/api/auth/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        username: username,
+                        password: password
+                    }),
+                    success: function(response) {
+                        if (response && response.token) {
+                            // Store token in localStorage
+                            localStorage.setItem('auth_token', response.token);
+                            localStorage.setItem('username', username);
+                            localStorage.setItem('user_role', (response.role || 'USER').toUpperCase());
+                            
+                            // Redirect to main page
+                            window.location.href = 'index.html';
+                        } else {
+                            $('#error-message').text('Invalid response from server').show();
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Authentication failed. Please check your credentials.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        $('#error-message').text(errorMsg).show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

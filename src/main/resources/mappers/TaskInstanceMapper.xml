@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.TaskInstanceMapper">
+    <resultMap id="TaskInstanceResult" type="com.ts.model.entity.TaskInstance">
+        <id property="taskInstanceId" column="TASK_INSTANCE_ID"/>
+        <result property="wfInstanceId" column="WF_INSTANCE_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="taskId" column="TASK_ID"/>
+        <result property="taskName" column="TASK_NAME"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+        <result property="errorFlag" column="ERROR_FLAG"/>
+        <result property="status" column="STATUS"/>
+        <result property="errorMessage" column="ERROR_MESSAGE"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" resultMap="TaskInstanceResult">
+        SELECT TASK_INSTANCE_ID,
+               WF_INSTANCE_ID,
+               WORKFLOW_ID,
+               TASK_ID,
+               START_DATE,
+               END_DATE,
+               ERROR_FLAG,
+               STATUS,
+               ERROR_MESSAGE
+        FROM TASK_INSTANCES
+        WHERE TASK_INSTANCE_ID = #{taskInstanceId}
+    </select>
+
+    <select id="selectBywfInstanceId" resultMap="TaskInstanceResult">
+        SELECT i.TASK_INSTANCE_ID,
+               i.WF_INSTANCE_ID,
+               i.WORKFLOW_ID,
+               i.TASK_ID,
+               d.TASK_NAME,
+               i.START_DATE,
+               i.END_DATE,
+               i.ERROR_FLAG,
+               i.STATUS,
+               i.ERROR_MESSAGE
+        FROM TASK_INSTANCES i
+                 LEFT JOIN
+             TASK_DEFINITIONS d ON i.TASK_ID = d.TASK_ID
+        WHERE WF_INSTANCE_ID = #{wfInstanceId}
+        ORDER BY CASE WHEN STATUS IN ('COMPLETED','SKIPPED','CANCELED') THEN 1  WHEN STATUS IN ('WAITING') THEN 3 ELSE 2 END, i.START_DATE,i.END_DATE, i.TASK_INSTANCE_ID
+    </select>
+
+    <select id="selectByTaskIdAndwfInstanceId" resultMap="TaskInstanceResult">
+        SELECT TASK_INSTANCE_ID,
+               WF_INSTANCE_ID,
+               WORKFLOW_ID,
+               TASK_ID,
+               START_DATE,
+               END_DATE,
+               ERROR_FLAG,
+               STATUS,
+               ERROR_MESSAGE
+        FROM TASK_INSTANCES
+        WHERE TASK_ID = #{taskId}
+          AND WF_INSTANCE_ID = #{wfInstanceId}
+    </select>
+
+    <insert id="insert" parameterType="com.ts.model.entity.TaskInstance">
+        INSERT INTO TASK_INSTANCES (TASK_INSTANCE_ID,
+                                    WF_INSTANCE_ID,
+                                    WORKFLOW_ID,
+                                    TASK_ID,
+                                    START_DATE,
+                                    END_DATE,
+                                    ERROR_FLAG,
+                                    STATUS)
+        VALUES (#{taskInstanceId},
+                #{wfInstanceId},
+                #{workflowId},
+                #{taskId},
+                #{startDate},
+                #{endDate},
+                #{errorFlag},
+                #{status})
+    </insert>
+
+    <update id="updateStatusToError" parameterType="com.ts.model.entity.TaskInstance">
+        UPDATE TASK_INSTANCES
+        SET END_DATE      = #{endDate},
+            ERROR_FLAG    = #{errorFlag},
+            STATUS        = #{status},
+            ERROR_MESSAGE = #{errorMessage}
+        WHERE TASK_INSTANCE_ID = #{taskInstanceId}
+    </update>
+    <update id="updateStatusToRunning" parameterType="com.ts.model.entity.TaskInstance">
+        UPDATE TASK_INSTANCES
+        SET START_DATE    = #{startDate},
+            END_DATE      = #{endDate},
+            STATUS        = #{status},
+            ERROR_MESSAGE = #{errorMessage}
+        WHERE TASK_INSTANCE_ID = #{taskInstanceId}
+    </update>
+    <update id="updateStatus" parameterType="com.ts.model.entity.TaskInstance">
+        UPDATE TASK_INSTANCES
+        SET END_DATE      = #{endDate},
+            STATUS        = #{status},
+            ERROR_MESSAGE = #{errorMessage}
+        WHERE TASK_INSTANCE_ID = #{taskInstanceId}
+    </update>
+</mapper>

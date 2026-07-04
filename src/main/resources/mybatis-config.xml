@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="db.properties"/>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <setting name="logImpl" value="LOG4J2"/>
+        <!-- 指定 null 值的默认 JDBC 类型 -->
+        <setting name="jdbcTypeForNull" value="NULL" />
+    </settings>
+    
+    <typeAliases>
+        <package name="com.ts.model.entity"/>
+    </typeAliases>
+
+    <plugins>
+        <!-- PageHelper 分页插件 -->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 方言选择，根据实际数据库类型设置 -->
+            <property name="helperDialect" value="oracle"/>
+            <!--property name="helperDialect" value="mysql"/-->
+            <!-- 合理化参数 -->
+            <property name="reasonable" value="true"/>
+            <!-- 支持通过方法参数传递分页参数 -->
+            <property name="supportMethodsArguments" value="true"/>
+            <!-- 参数映射 -->
+            <property name="params" value="count=countSql"/>
+        </plugin>
+    </plugins>
+    
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driverClassName}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+        <environment id="production">
+            <transactionManager type="JDBC"/>
+            <dataSource type="com.ts.config.HikariDataSourceFactory">
+                <property name="driver" value="${jdbc.driverClassName}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+                <!-- HikariCP settings -->
+                <property name="minimumIdle" value="${hikari.minimumIdle}"/>
+                <property name="maximumPoolSize" value="${hikari.maximumPoolSize}"/>
+                <property name="idleTimeout" value="${hikari.idleTimeout}"/>
+                <property name="maxLifetime" value="${hikari.maxLifetime}"/>
+                <property name="connectionTimeout" value="${hikari.connectionTimeout}"/>
+                <property name="poolName" value="${hikari.poolName}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    
+    <mappers>
+        <mapper resource="mappers/GlobalParamsMapper.xml"/>
+        <mapper resource="mappers/TaskDefinitionMapper.xml"/>
+        <mapper resource="mappers/TaskInstanceMapper.xml"/>
+        <mapper resource="mappers/TaskParameterMapper.xml"/>
+        <mapper resource="mappers/TaskTypeMapper.xml"/>
+		<mapper resource="mappers/WfDefinitionMapper.xml"/>
+		<mapper resource="mappers/WfInstanceMapper.xml"/>
+		<mapper resource="mappers/WfParameterMapper.xml"/>
+        <mapper resource="mappers/WfSchedulerMapper.xml"/>
+        <mapper resource="mappers/TSLockMapper.xml"/>
+        <mapper resource="mappers/TaskLogMapper.xml"/>
+        <mapper resource="mappers/UserMapper.xml"/>
+        <mapper resource="mappers/HistoryMapper.xml"/>
+        <mapper resource="mappers/VInstancesStatsMapper.xml"/>
+        <mapper resource="mappers/AuditLogMapper.xml"/>
+        <mapper resource="mappers/TsEventMapper.xml"/>
+    </mappers>
+</configuration>

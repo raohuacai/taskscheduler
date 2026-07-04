@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ts.mapper.AuditLogMapper">
+
+    <resultMap id="AuditLogResult" type="com.ts.model.entity.AuditLog">
+        <id     property="auditId"     column="AUDIT_ID"/>
+        <result property="operator"    column="OPERATOR"/>
+        <result property="operation"   column="OPERATION"/>
+        <result property="module"      column="MODULE"/>
+        <result property="httpMethod"  column="HTTP_METHOD"/>
+        <result property="requestPath" column="REQUEST_PATH"/>
+        <result property="dataJson"    column="DATA_JSON"/>
+        <result property="result"      column="RESULT"/>
+        <result property="errorMsg"    column="ERROR_MSG"/>
+        <result property="clientIp"    column="CLIENT_IP"/>
+        <result property="operateTime" column="OPERATE_TIME"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ts.model.entity.AuditLog">
+        INSERT INTO TS_AUDIT (
+            AUDIT_ID,
+            OPERATOR,
+            OPERATION,
+            MODULE,
+            HTTP_METHOD,
+            REQUEST_PATH,
+            DATA_JSON,
+            RESULT,
+            ERROR_MSG,
+            CLIENT_IP,
+            OPERATE_TIME
+        ) VALUES (
+            #{auditId},
+            #{operator},
+            #{operation},
+            #{module},
+            #{httpMethod},
+            #{requestPath},
+            #{dataJson},
+            #{result},
+            #{errorMsg},
+            #{clientIp},
+            #{operateTime}
+        )
+    </insert>
+
+</mapper>
