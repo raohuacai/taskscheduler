@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.TaskDefinitionMapper">
+    <resultMap id="TaskDefinitionResult" type="com.ts.model.entity.TaskDefinition">
+        <id property="taskId" column="TASK_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="taskName" column="TASK_NAME"/>
+        <result property="taskDesc" column="TASK_DESC"/>
+        <result property="taskType" column="TASK_TYPE"/>
+        <result property="enableFlag" column="ENABLE_FLAG"/>
+        <result property="predecessors" column="PREDECESSORS"/>
+        <result property="pvalue" column="PVALUE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+        <result property="lastUpdatedBy" column="LAST_UPDATED_BY"/>
+        <result property="lastUpdateDate" column="LAST_UPDATE_DATE"/>
+    </resultMap>
+    
+    <select id="selectByPrimaryKey" resultMap="TaskDefinitionResult">
+        SELECT
+            TASK_ID,
+            WORKFLOW_ID,
+            TASK_NAME,
+            TASK_DESC,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        FROM
+            TASK_DEFINITIONS
+        WHERE
+            TASK_ID = #{taskId}
+    </select>
+    
+    <select id="selectByWorkflowId" resultMap="TaskDefinitionResult">
+        SELECT
+            TASK_ID,
+            WORKFLOW_ID,
+            TASK_NAME,
+            TASK_DESC,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        FROM
+            TASK_DEFINITIONS
+        WHERE
+            WORKFLOW_ID = #{workflowId}
+        ORDER BY
+            TASK_ID
+    </select>
+
+    <select id="selectByName" resultMap="TaskDefinitionResult">
+        SELECT TASK_ID,
+               WORKFLOW_ID,
+               TASK_NAME,
+               TASK_DESC,
+               TASK_TYPE,
+               ENABLE_FLAG,
+               PREDECESSORS,
+               PVALUE,
+               CREATED_BY,
+               CREATION_DATE,
+               LAST_UPDATED_BY,
+               LAST_UPDATE_DATE
+        FROM TASK_DEFINITIONS
+        WHERE WORKFLOW_ID = #{workflowId}
+          AND TASK_NAME = #{taskName}
+    </select>
+    
+    <insert id="insert" parameterType="com.ts.model.entity.TaskDefinition">
+        INSERT INTO TASK_DEFINITIONS (
+            TASK_ID,
+            WORKFLOW_ID,
+            TASK_NAME,
+            TASK_DESC,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        ) VALUES (
+            #{taskId},
+            #{workflowId},
+            #{taskName},
+            #{taskDesc},
+            #{taskType},
+            #{enableFlag},
+            #{predecessors},
+            #{pvalue},
+            #{createdBy},
+            #{creationDate},
+            #{lastUpdatedBy},
+            #{lastUpdateDate}
+        )
+    </insert>
+    
+    <update id="updateByPrimaryKey" parameterType="com.ts.model.entity.TaskDefinition">
+        UPDATE TASK_DEFINITIONS
+        SET
+            TASK_NAME = #{taskName},
+            TASK_DESC = #{taskDesc},
+            TASK_TYPE = #{taskType},
+            ENABLE_FLAG = #{enableFlag},
+            PVALUE = #{pvalue},
+            LAST_UPDATED_BY = #{lastUpdatedBy},
+            LAST_UPDATE_DATE = #{lastUpdateDate}
+        WHERE
+            TASK_ID = #{taskId}
+    </update>
+
+    <update id="updatePredecessors" parameterType="com.ts.model.entity.TaskDefinition">
+        UPDATE TASK_DEFINITIONS
+        SET PREDECESSORS     = #{predecessors},
+            LAST_UPDATED_BY  = #{lastUpdatedBy},
+            LAST_UPDATE_DATE = #{lastUpdateDate}
+        WHERE TASK_ID = #{taskId}
+    </update>
+    
+    <delete id="deleteByPrimaryKey" parameterType="string">
+        DELETE FROM TASK_DEFINITIONS
+        WHERE TASK_ID = #{taskId}
+    </delete>
+    
+    <delete id="deleteByWorkflowId" parameterType="string">
+        DELETE FROM TASK_DEFINITIONS
+        WHERE WORKFLOW_ID = #{workflowId}
+    </delete>
+</mapper>

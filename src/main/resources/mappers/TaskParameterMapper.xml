@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.TaskParameterMapper">
+    <resultMap id="TaskParameterResult" type="com.ts.model.entity.TaskParameter">
+        <id property="taskParamId" column="TASK_PARAM_ID"/>
+        <result property="wfInstanceId" column="WF_INSTANCE_ID"/>
+        <result property="taskInstanceId" column="TASK_INSTANCE_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="taskId" column="TASK_ID"/>
+        <result property="taskType" column="TASK_TYPE"/>
+        <result property="enableFlag" column="ENABLE_FLAG"/>
+        <result property="predecessors" column="PREDECESSORS"/>
+        <result property="pvalue" column="PVALUE"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+        <result property="taskName" column="TASK_NAME"/>
+    </resultMap>
+    
+    <select id="selectByPrimaryKey" resultMap="TaskParameterResult">
+        SELECT
+            TASK_PARAM_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            WORKFLOW_ID,
+            TASK_ID,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATION_DATE,
+            TASK_NAME
+        FROM
+            TASK_PARAMS
+        WHERE
+            TASK_PARAM_ID = #{taskParamId}
+    </select>
+    
+    <select id="selectByTaskInstanceId" resultMap="TaskParameterResult">
+        SELECT
+            TASK_PARAM_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            WORKFLOW_ID,
+            TASK_ID,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATION_DATE,
+            TASK_NAME
+        FROM
+            TASK_PARAMS
+        WHERE
+            TASK_INSTANCE_ID = #{taskInstanceId}
+    </select>
+    
+    <select id="selectBywfInstanceId" resultMap="TaskParameterResult">
+        SELECT
+            TASK_PARAM_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            WORKFLOW_ID,
+            TASK_ID,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATION_DATE,
+            TASK_NAME
+        FROM
+            TASK_PARAMS
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </select>
+    
+    <insert id="insert" parameterType="com.ts.model.entity.TaskParameter">
+        INSERT INTO TASK_PARAMS (
+            TASK_PARAM_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            WORKFLOW_ID,
+            TASK_ID,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATION_DATE,
+            TASK_NAME
+        ) VALUES (
+            #{taskParamId},
+            #{wfInstanceId},
+            #{taskInstanceId},
+            #{workflowId},
+            #{taskId},
+            #{taskType},
+            #{enableFlag},
+            #{predecessors},
+            #{pvalue},
+            #{creationDate},
+            #{taskName}
+        )
+    </insert>
+    
+    <update id="updatePvalueByPrimaryKey">
+        UPDATE TASK_PARAMS
+        SET PVALUE = #{pvalue}
+        WHERE TASK_PARAM_ID = #{taskParamId}
+    </update>
+    
+    <update id="updatePvalueByTaskInstanceId">
+        UPDATE TASK_PARAMS
+        SET PVALUE = #{pvalue}
+        WHERE TASK_INSTANCE_ID = #{taskInstanceId}
+    </update>
+
+    <select id="selectByWfInstanceIdAndTaskIds" resultMap="TaskParameterResult">
+        SELECT
+            TASK_PARAM_ID,
+            WF_INSTANCE_ID,
+            TASK_INSTANCE_ID,
+            WORKFLOW_ID,
+            TASK_ID,
+            TASK_TYPE,
+            ENABLE_FLAG,
+            PREDECESSORS,
+            PVALUE,
+            CREATION_DATE,
+            TASK_NAME
+        FROM
+            TASK_PARAMS
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+            AND TASK_ID IN
+            <foreach collection="taskIds" item="taskId" open="(" separator="," close=")">
+                #{taskId}
+            </foreach>
+    </select>
+</mapper>

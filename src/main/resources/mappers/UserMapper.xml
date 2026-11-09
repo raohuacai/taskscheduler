@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ts.mapper.UserMapper">
+
+    <!-- ── ResultMap ──────────────────────────────────────────────────── -->
+    <resultMap id="UserResultMap" type="com.ts.model.entity.User">
+        <result column="USERNAME"         property="username"/>
+        <result column="PASSWORD"         property="password"/>
+        <result column="FULL_NAME"        property="fullName"/>
+        <result column="EMAIL"            property="email"/>
+        <result column="PHONE"            property="phone"/>
+        <result column="STATUS"           property="status"/>
+        <result column="ROLE"             property="role"/>
+        <result column="CREATED_BY"       property="createdBy"/>
+        <result column="CREATION_DATE"    property="creationDate"/>
+        <result column="LAST_UPDATED_BY"  property="lastUpdatedBy"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate"/>
+    </resultMap>
+
+    <!-- ── SELECT one ─────────────────────────────────────────────────── -->
+    <select id="getUserByUsername" resultMap="UserResultMap">
+        SELECT
+            USERNAME,
+            PASSWORD,
+            FULL_NAME,
+            EMAIL,
+            PHONE,
+            STATUS,
+            ROLE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        FROM TS_USER
+        WHERE USERNAME = #{username}
+    </select>
+
+    <!-- ── SELECT all ─────────────────────────────────────────────────── -->
+    <select id="getAllUsers" resultMap="UserResultMap">
+        SELECT
+            USERNAME,
+            FULL_NAME,
+            EMAIL,
+            PHONE,
+            STATUS,
+            ROLE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        FROM TS_USER
+        ORDER BY USERNAME
+    </select>
+
+    <!-- ── INSERT ─────────────────────────────────────────────────────── -->
+    <insert id="insertUser">
+        INSERT INTO TS_USER (
+            USERNAME,
+            PASSWORD,
+            FULL_NAME,
+            EMAIL,
+            PHONE,
+            STATUS,
+            ROLE,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        ) VALUES (
+            #{user.username},
+            #{user.password},
+            #{user.fullName},
+            #{user.email},
+            #{user.phone},
+            #{user.status},
+            #{user.role},
+            #{user.createdBy},
+            #{user.creationDate},
+            #{user.lastUpdatedBy},
+            #{user.lastUpdateDate}
+        )
+    </insert>
+
+    <!-- ── UPDATE full ────────────────────────────────────────────────── -->
+    <update id="updateUser">
+        UPDATE TS_USER
+        SET
+            FULL_NAME        = #{user.fullName},
+            EMAIL            = #{user.email},
+            PHONE            = #{user.phone},
+            STATUS           = #{user.status},
+            ROLE             = #{user.role},
+            LAST_UPDATED_BY  = #{user.lastUpdatedBy},
+            LAST_UPDATE_DATE = #{user.lastUpdateDate}
+        WHERE USERNAME = #{user.username}
+    </update>
+
+    <!-- ── UPDATE password ────────────────────────────────────────────── -->
+    <update id="updateUserPassword">
+        UPDATE TS_USER
+        SET
+            PASSWORD         = #{user.password},
+            LAST_UPDATED_BY  = #{user.lastUpdatedBy},
+            LAST_UPDATE_DATE = #{user.lastUpdateDate}
+        WHERE USERNAME = #{user.username}
+    </update>
+
+    <!-- ── DELETE ─────────────────────────────────────────────────────── -->
+    <delete id="deleteUser">
+        DELETE FROM TS_USER
+        WHERE USERNAME = #{username}
+    </delete>
+
+</mapper>

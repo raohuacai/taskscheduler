@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.WfSchedulerMapper">
+    <resultMap id="WfSchedulerResult" type="com.ts.model.entity.WfScheduler">
+        <id property="workflowId" column="WORKFLOW_ID"/>
+        <result property="workflowName"  column="WORKFLOW_NAME"/>
+        <result property="cron" column="CRON"/>
+        <result property="enableFlag" column="ENABLE_FLAG"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+        <result property="lastUpdatedBy" column="LAST_UPDATED_BY"/>
+        <result property="lastUpdateDate" column="LAST_UPDATE_DATE"/>
+    </resultMap>
+
+    <select id="selectByPrimaryKey" resultMap="WfSchedulerResult">
+        SELECT s.WORKFLOW_ID,
+               d.WORKFLOW_NAME,
+               s.CRON,
+               s.ENABLE_FLAG,
+               s.CREATED_BY,
+               s.CREATION_DATE,
+               s.LAST_UPDATED_BY,
+               s.LAST_UPDATE_DATE
+        FROM WF_SCHEDULER s
+                 LEFT JOIN
+             WF_DEFINITIONS d ON s.WORKFLOW_ID = d.WORKFLOW_ID
+        WHERE s.WORKFLOW_ID = #{workflowId}
+    </select>
+
+    <select id="selectAll" resultMap="WfSchedulerResult">
+        SELECT
+        s.WORKFLOW_ID,
+        d.WORKFLOW_NAME,
+        s.CRON,
+        s.ENABLE_FLAG,
+        s.CREATED_BY,
+        s.CREATION_DATE,
+        s.LAST_UPDATED_BY,
+        s.LAST_UPDATE_DATE
+        FROM
+        WF_SCHEDULER s
+        LEFT JOIN
+        WF_DEFINITIONS d ON s.WORKFLOW_ID = d.WORKFLOW_ID
+        <where>
+            <if test="workflowId != null and workflowId != ''">
+                AND s.WORKFLOW_ID LIKE #{workflowId}
+            </if>
+            <if test="workflowName != null and workflowName != ''">
+                AND d.WORKFLOW_NAME LIKE #{workflowName}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAllActives" resultMap="WfSchedulerResult">
+        SELECT
+            WORKFLOW_ID,
+            CRON,
+            ENABLE_FLAG,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        FROM
+            WF_SCHEDULER
+        WHERE
+            ENABLE_FLAG = 'Y'
+    </select>
+
+    <insert id="insert" parameterType="com.ts.model.entity.WfScheduler">
+        INSERT INTO WF_SCHEDULER (
+            WORKFLOW_ID,
+            CRON,
+            ENABLE_FLAG,
+            CREATED_BY,
+            CREATION_DATE,
+            LAST_UPDATED_BY,
+            LAST_UPDATE_DATE
+        ) VALUES (
+                     #{workflowId},
+                     #{cron},
+                     #{enableFlag},
+                     #{createdBy},
+                     #{creationDate},
+                     #{lastUpdatedBy},
+                     #{lastUpdateDate}
+                 )
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.ts.model.entity.WfScheduler">
+        UPDATE WF_SCHEDULER
+        SET
+            CRON = #{cron},
+            ENABLE_FLAG = #{enableFlag},
+            LAST_UPDATED_BY = #{lastUpdatedBy},
+            LAST_UPDATE_DATE = #{lastUpdateDate}
+        WHERE
+            WORKFLOW_ID = #{workflowId}
+    </update>
+
+    <delete id="deleteByPrimaryKey" parameterType="string">
+        DELETE FROM WF_SCHEDULER
+        WHERE WORKFLOW_ID = #{workflowId}
+    </delete>
+
+    <!-- New queries for enhanced functionality -->
+    <!-- use for Clean up stale schedules that are no longer active -->
+    <select id="selectAllActiveWorkflowIds" resultType="string">
+        SELECT
+            WORKFLOW_ID
+        FROM
+            WF_SCHEDULER sched
+        WHERE
+            exists (
+                SELECT 1 FROM
+                    WF_INSTANCES inst
+                WHERE
+                    sched.WORKFLOW_ID = inst.WORKFLOW_ID and inst.STATUS IN ('RUNNING', 'WAITING', 'WAIT')
+            )
+    </select>
+
+    <select id="countActiveSchedulerWorkflows" resultType="int">
+        SELECT
+            COUNT(WORKFLOW_ID)
+        FROM
+            WF_SCHEDULER
+        WHERE
+            ENABLE_FLAG = 'Y'
+    </select>
+
+</mapper>

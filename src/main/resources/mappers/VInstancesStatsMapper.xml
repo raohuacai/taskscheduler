@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.VInstancesStatsMapper">
+    <resultMap id="vInstancesStatsResultMap" type="com.ts.model.vo.VInstancesStatsVO">
+        <result property="dtype" column="DTYPE" />
+        <result property="startDate" column="START_DATE" />
+        <result property="completedCount" column="COMPLETED_COUNT" />
+        <result property="errorCount" column="ERROR_COUNT" />
+        <result property="cancelCount" column="CANCEL_COUNT" />
+    </resultMap>
+    <select id="findAll" resultMap="vInstancesStatsResultMap">
+        SELECT DTYPE, START_DATE, COMPLETED_COUNT, ERROR_COUNT, CANCEL_COUNT FROM V_INSTANCES_STATS
+    </select>
+</mapper>

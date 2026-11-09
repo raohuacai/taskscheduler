@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.TsEventMapper">
+
+    <!--
+        All timestamp columns use Java-side parameter values (#{xxx}).
+        No Oracle SYSDATE is used here; timestamp generation is the caller's
+        responsibility, consistent with TaskLogMapper and AuditLogMapper.
+    -->
+
+    <resultMap id="TsEventResult" type="com.ts.model.entity.TsEvent">
+        <id     property="id"             column="ID"/>
+        <result property="eventKey"       column="EVENT_KEY"/>
+        <result property="tpwfInstanceId" column="TPWF_INSTANCE_ID"/>
+        <result property="taskId"         column="TASK_ID"/>
+        <result property="status"         column="STATUS"/>
+        <result property="payload"        column="PAYLOAD"/>
+        <result property="triggeredBy"    column="TRIGGERED_BY"/>
+        <result property="creationDate"   column="CREATION_DATE"/>
+        <result property="waitDate"       column="WAIT_DATE"/>
+        <result property="triggeredDate"  column="TRIGGERED_DATE"/>
+    </resultMap>
+
+    <!-- Insert new record (status=NEW). creationDate supplied by Java. -->
+    <insert id="insert" parameterType="com.ts.model.entity.TsEvent">
+        INSERT INTO TS_EVENT (
+            ID, EVENT_KEY, TPWF_INSTANCE_ID, TASK_ID,
+            STATUS, PAYLOAD, TRIGGERED_BY,
+            CREATION_DATE, WAIT_DATE, TRIGGERED_DATE
+        ) VALUES (
+            #{id}, #{eventKey}, #{tpwfInstanceId}, #{taskId},
+            #{status}, #{payload}, #{triggeredBy},
+            #{creationDate}, #{waitDate}, #{triggeredDate}
+        )
+    </insert>
+
+    <!-- Select by event key -->
+    <select id="selectByEventKey" resultMap="TsEventResult">
+        SELECT ID, EVENT_KEY, TPWF_INSTANCE_ID, TASK_ID,
+               STATUS, PAYLOAD, TRIGGERED_BY,
+               CREATION_DATE, WAIT_DATE, TRIGGERED_DATE
+        FROM   TS_EVENT
+        WHERE  EVENT_KEY = #{eventKey}
+    </select>
+
+    <!-- Select by composite key (tpwfInstanceId, taskId) -->
+    <select id="selectByTpwfAndTaskId" resultMap="TsEventResult">
+        SELECT ID, EVENT_KEY, TPWF_INSTANCE_ID, TASK_ID,
+               STATUS, PAYLOAD, TRIGGERED_BY,
+               CREATION_DATE, WAIT_DATE, TRIGGERED_DATE
+        FROM   TS_EVENT
+        WHERE  TPWF_INSTANCE_ID = #{tpwfInstanceId}
+          AND  TASK_ID           = #{taskId}
+    </select>
+
+    <!--
+        NEW -> WAITING.
+        Guard: STATUS = 'NEW' ensures forward-only transition.
+        waitDate is supplied by Java (not SYSDATE).
+    -->
+    <update id="updateToWaiting">
+        UPDATE TS_EVENT
+        SET    STATUS    = 'WAITING',
+               WAIT_DATE = #{waitDate}
+        WHERE  EVENT_KEY = #{eventKey}
+          AND  STATUS    = 'NEW'
+    </update>
+
+    <!--
+        (NEW | WAITING) -> TRIGGERED.
+        Accepts both source statuses to handle the race where the trigger
+        arrives before EventTask reaches preAction().
+        triggeredDate is supplied by Java (not SYSDATE).
+    -->
+    <update id="updateToTriggered">
+        UPDATE TS_EVENT
+        SET    STATUS         = 'TRIGGERED',
+               PAYLOAD        = #{payload},
+               TRIGGERED_BY   = #{triggeredBy},
+               TRIGGERED_DATE = #{triggeredDate}
+        WHERE  EVENT_KEY = #{eventKey}
+          AND  STATUS   IN ('NEW', 'WAITING')
+    </update>
+
+</mapper>

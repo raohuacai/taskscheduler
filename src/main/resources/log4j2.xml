@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n</Property>
+        <Property name="MONITOR_LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</Property>
+        <Property name="APP_LOG_ROOT">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <!-- 添加过滤器，允许 debug 及以上级别 -->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+        </Console>
+        <RollingFile name="RollingFile"
+                     fileName="${APP_LOG_ROOT}/application.log"
+                     filePattern="${APP_LOG_ROOT}/application-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        <!-- http server log -->
+        <RollingFile name="AccessFile"
+                     fileName="${APP_LOG_ROOT}/access.log"
+                     filePattern="${APP_LOG_ROOT}/access-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+        <!-- system and core stats monitor -->
+        <RollingFile name="MonitorReportFile"
+                     fileName="${APP_LOG_ROOT}/monitor.log"
+                     filePattern="${APP_LOG_ROOT}/monitor-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${MONITOR_LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+
+        <Logger name="com.ts.monitor.Report" level="info" additivity="false">
+            <AppenderRef ref="MonitorReportFile"/>
+        </Logger>
+        <Logger name="com.ts.server" level="info" additivity="false">
+            <AppenderRef ref="AccessFile"/>
+        </Logger>
+
+        <!-- Application specific loggers -->
+        <Logger name="com.ts" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+        <!--Logger name="com.ts.core.timewheel" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.ts.core.scheduler" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger-->
+        <!-- Third-party library loggers -->
+        <Logger name="org.mybatis" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.WfParameterMapper">
+    <resultMap id="WfParameterResult" type="com.ts.model.entity.WfParameter">
+        <id property="wfParamId" column="WF_PARAMS_ID"/>
+        <result property="wfInstanceId" column="WF_INSTANCE_ID"/>
+        <result property="workflowId" column="WORKFLOW_ID"/>
+        <result property="enableFlag" column="ENABLE_FLAG"/>
+        <result property="pvalue" column="PVALUE"/>
+        <result property="creationDate" column="CREATION_DATE"/>
+        <result property="workflowName" column="WORKFLOW_NAME"/>
+    </resultMap>
+    
+    <select id="selectByPrimaryKey" resultMap="WfParameterResult">
+        SELECT
+            WF_PARAMS_ID,
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            ENABLE_FLAG,
+            PVALUE,
+            CREATION_DATE,
+            WORKFLOW_NAME
+        FROM
+            WF_PARAMS
+        WHERE
+            WF_PARAMS_ID = #{wfParamId}
+    </select>
+    
+    <select id="selectBywfInstanceId" resultMap="WfParameterResult">
+        SELECT
+            WF_PARAMS_ID,
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            ENABLE_FLAG,
+            PVALUE,
+            CREATION_DATE,
+            WORKFLOW_NAME
+        FROM
+            WF_PARAMS
+        WHERE
+            WF_INSTANCE_ID = #{wfInstanceId}
+    </select>
+
+    <select id="selectAll" resultMap="WfParameterResult">
+        SELECT
+            WF_PARAMS_ID,
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            ENABLE_FLAG,
+            PVALUE,
+            CREATION_DATE,
+            WORKFLOW_NAME
+        FROM
+            WF_PARAMS
+    </select>
+    
+    <insert id="insert" parameterType="com.ts.model.entity.WfParameter">
+        INSERT INTO WF_PARAMS (
+            WF_PARAMS_ID,
+            WF_INSTANCE_ID,
+            WORKFLOW_ID,
+            ENABLE_FLAG,
+            PVALUE,
+            CREATION_DATE,
+            WORKFLOW_NAME
+        ) VALUES (
+            #{wfParamId},
+            #{wfInstanceId},
+            #{workflowId},
+            #{enableFlag},
+            #{pvalue},
+            #{creationDate},
+            #{workflowName}
+        )
+    </insert>
+    
+    <update id="updatePvalueByPrimaryKey">
+        UPDATE WF_PARAMS
+        SET PVALUE = #{pvalue}
+        WHERE WF_PARAMS_ID = #{wfParamId}
+    </update>
+    
+    <update id="updatePvalueBywfInstanceId">
+        UPDATE WF_PARAMS
+        SET PVALUE = #{pvalue}
+        WHERE WF_INSTANCE_ID = #{wfInstanceId}
+    </update>
+</mapper>

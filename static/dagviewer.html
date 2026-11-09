@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Instance Viewer</title>
+    <link href="css/dag.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #graph {
+            width: 100vw;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+
+        /* ── Right-click context menu ── */
+        #dag-context-menu {
+            display: none;
+            position: fixed;
+            z-index: 9000;
+            min-width: 180px;
+            background: #fff;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.18);
+            padding: 6px 0;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+        #dag-context-menu.visible { display: block; }
+        #ctx-task-label {
+            padding: 6px 14px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+        .ctx-divider {
+            height: 1px;
+            background: #ebebeb;
+            margin: 4px 0;
+        }
+        .ctx-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 7px 14px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            transition: background .12s;
+        }
+        .ctx-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .ctx-btn:hover { background: #f4f4f4; }
+        .ctx-btn-danger  { color: #d32f2f; }
+        .ctx-btn-primary { color: #1565c0; }
+        .ctx-btn-warning { color: #e65100; }
+        .ctx-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+        /* ── Confirmation dialog (same behaviour as the monitoring lists) ── */
+        #dag-confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9200;
+            background: rgba(0, 0, 0, .35);
+            align-items: center;
+            justify-content: center;
+        }
+        #dag-confirm-overlay.visible { display: flex; }
+        .dag-confirm-dialog {
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+            padding: 18px 20px 16px;
+            font-family: Arial, sans-serif;
+        }
+        .dag-confirm-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .dag-confirm-message {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            word-break: break-word;
+        }
+        .dag-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .dag-confirm-btn {
+            padding: 6px 16px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .dag-confirm-btn:hover { opacity: .9; }
+        .dag-confirm-btn-cancel  { background: #f2f2f2; border-color: #ccc; color: #333; }
+        .dag-confirm-btn-primary { background: #1565c0; color: #fff; }
+        .dag-confirm-btn-warning { background: #e65100; color: #fff; }
+        .dag-confirm-btn-danger  { background: #d32f2f; color: #fff; }
+
+        /* ── Toast ── */
+        #dag-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9100;
+            pointer-events: none;
+        }
+        .dag-toast-msg {
+            padding: 9px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            opacity: 0;
+            transition: opacity .25s;
+            margin-top: 6px;
+            white-space: nowrap;
+        }
+        .dag-toast-msg.show { opacity: 1; }
+        .dag-toast-info    { background: #1565c0; }
+        .dag-toast-success { background: #2e7d32; }
+        .dag-toast-error   { background: #c62828; }
+    </style>
+</head>
+<body>
+    <div id="graph"></div>
+    <div id="dag-breadcrumb"></div>
+    <div id="tooltip" class="dag-tooltip"></div>
+
+    <!-- Right-click context menu (shared for task nodes and canvas) -->
+    <div id="dag-context-menu">
+        <div id="ctx-header-label"></div>
+        <div class="ctx-divider"></div>
+
+        <!-- Task-level actions -->
+        <button id="ctx-cancel-btn" class="ctx-btn ctx-btn-danger">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+            Cancel Task
+        </button>
+        <button id="ctx-retry-btn" class="ctx-btn ctx-btn-primary">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+            Retry Task
+        </button>
+        <button id="ctx-skip-btn" class="ctx-btn ctx-btn-warning">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.678 4 4.308v7.384c0 .63.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0V4z"/></svg>
+            Skip Task
+        </button>
+        <!-- WORKFLOW-type tasks: drill into the child workflow instance -->
+        <button id="ctx-subwf-btn" class="ctx-btn ctx-btn-primary">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/></svg>
+            Show Sub-workflow
+        </button>
+
+        <!-- Workflow-level actions (shown when right-clicking canvas) -->
+        <button id="ctx-cancel-wf-btn" class="ctx-btn ctx-btn-danger">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+            Cancel Workflow
+        </button>
+        <button id="ctx-recover-wf-btn" class="ctx-btn ctx-btn-warning">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+            Recover Workflow
+        </button>
+        <!-- Sub-workflow view: return to the parent workflow -->
+        <button id="ctx-back-wf-btn" class="ctx-btn">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+            Back to Parent Workflow
+        </button>
+    </div>
+
+    <!-- Action confirmation dialog -->
+    <div id="dag-confirm-overlay">
+        <div class="dag-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="dag-confirm-title">
+            <div class="dag-confirm-title" id="dag-confirm-title">Confirmation</div>
+            <div class="dag-confirm-message" id="dag-confirm-message"></div>
+            <div class="dag-confirm-actions">
+                <button type="button" class="dag-confirm-btn dag-confirm-btn-cancel" id="dag-confirm-cancel">Cancel</button>
+                <button type="button" class="dag-confirm-btn dag-confirm-btn-primary" id="dag-confirm-ok">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action feedback toast -->
+    <div id="dag-toast"></div>
+
+    <!-- Third-party libraries -->
+    <script src="js/libs/d3.v7.min.js"></script>
+    <script src="js/libs/dagre.min.js"></script>
+
+    <!-- Shared modules -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dag.js"></script>
+
+    <script>
+        window.addEventListener('load', function () {
+            MonitorDAG.init();
+        });
+    </script>
+</body>
+</html>

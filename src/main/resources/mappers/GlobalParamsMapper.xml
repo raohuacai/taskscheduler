@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ts.mapper.GlobalParamsMapper">
+    <resultMap id="GlobalParamsResult" type="com.ts.model.entity.GlobalParams">
+        <id property="pname" column="PNAME"/>
+        <result property="pvalue" column="PVALUE"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="GlobalParamsResult">
+        SELECT
+            PNAME,
+            PVALUE
+        FROM
+            GLOBAL_PARAMS
+        ORDER BY
+            PNAME DESC
+    </select>
+    
+    <select id="selectByPrimaryKey" resultMap="GlobalParamsResult">
+        SELECT
+            PNAME,
+            PVALUE
+        FROM
+            GLOBAL_PARAMS
+        WHERE
+            PNAME = #{pname}
+    </select>
+    
+    <update id="updateByPrimaryKey" parameterType="com.ts.model.entity.GlobalParams">
+        UPDATE GLOBAL_PARAMS
+        SET
+            PVALUE = #{pvalue}
+        WHERE
+            PNAME = #{pname}
+    </update>
+</mapper>

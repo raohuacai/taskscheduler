@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ts.mapper.TSLockMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.ts.model.entity.TSLock">
+        <result column="LOCK_NAME" property="lockName" jdbcType="VARCHAR"/>
+        <result column="LOCK_OWNER" property="lockOwner" jdbcType="VARCHAR"/>
+        <result column="LOCK_TYPE" property="lockType" jdbcType="VARCHAR"/>
+        <result column="LOCK_DATE" property="lockDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 插入锁记录 -->
+    <insert id="insertLock" parameterType="com.ts.model.entity.TSLock">
+        INSERT INTO TS_LOCK (
+            LOCK_NAME,
+            LOCK_OWNER,
+            LOCK_TYPE,
+            LOCK_DATE
+        ) VALUES (
+                     #{lockName, jdbcType=VARCHAR},
+                     #{lockOwner, jdbcType=VARCHAR},
+                     #{lockType, jdbcType=VARCHAR},
+                     #{lockDate, jdbcType=TIMESTAMP}
+                 )
+    </insert>
+
+    <!-- 通过锁名称删除锁 -->
+    <delete id="deleteLock">
+        DELETE FROM TS_LOCK
+        WHERE LOCK_NAME = #{lockName, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 删除所有锁 -->
+    <delete id="deleteAllLocks">
+        DELETE FROM TS_LOCK
+    </delete>
+
+    <!-- 删除特定拥有者的所有锁 -->
+    <delete id="deleteAllLocksByOwner">
+        DELETE FROM TS_LOCK
+        WHERE LOCK_OWNER = #{lockOwner, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 查询所有锁 -->
+    <select id="selectAllLocks" resultMap="BaseResultMap">
+        SELECT
+            LOCK_NAME,
+            LOCK_OWNER,
+            LOCK_TYPE,
+            LOCK_DATE
+        FROM TS_LOCK
+        ORDER BY LOCK_DATE
+    </select>
+
+    <!-- 通过锁拥有者查询锁 -->
+    <select id="selectLocksByOwner" resultMap="BaseResultMap">
+        SELECT
+            LOCK_NAME,
+            LOCK_OWNER,
+            LOCK_TYPE,
+            LOCK_DATE
+        FROM TS_LOCK
+        WHERE LOCK_OWNER LIKE #{lockOwner, jdbcType=VARCHAR}
+        ORDER BY LOCK_DATE
+    </select>
+
+    <!-- 通过锁名称查询锁 -->
+    <select id="selectLocksByName" resultMap="BaseResultMap">
+        SELECT
+            LOCK_NAME,
+            LOCK_OWNER,
+            LOCK_TYPE,
+            LOCK_DATE
+        FROM TS_LOCK
+        WHERE LOCK_NAME LIKE #{lockName, jdbcType=VARCHAR}
+        ORDER BY LOCK_DATE
+    </select>
+
+    <!-- 检查锁是否存在 -->
+    <select id="checkLockExists" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM TS_LOCK
+        WHERE LOCK_NAME = #{lockName, jdbcType=VARCHAR}
+    </select>
+
+</mapper>
